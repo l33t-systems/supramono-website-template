@@ -5,3 +5,4 @@ dist/
 .mcp.json
 *.log
 .DS_Store
+tsconfig.tsbuildinfo
