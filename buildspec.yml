@@ -1,0 +1,23 @@
+# Reference buildspec. NOTE: the Supramono pipeline uses its own inline
+# buildspec (clone -> npm ci -> npm run build -> s3 sync); this file exists so
+# you can reproduce the same build locally or in your own CI:
+#
+#   npm ci && npm run build     # output lands in dist/
+#
+# Env vars provided by the Supramono pipeline at build time:
+#   SUPRAMONO_API_URL      - platform base URL
+#   SUPRAMONO_PUBLIC_KEY   - public site key (browser-safe)
+#   PRODUCT_SLUG           - your product slug
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+  build:
+    commands:
+      - npm ci
+      - npm run build
+artifacts:
+  base-directory: dist
+  files:
+    - "**/*"

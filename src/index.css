@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Brand CSS variables — set at runtime by useBrand() from GET /brand/.
+   Defaults keep the site presentable before the fetch resolves. */
+:root {
+  --brand-primary: #4f46e5;
+  --brand-bg: #eef2ff;
+  --brand-text: #111827;
+}
+
+/* Rendered CMS content (post.html / section html) */
+.prose-cms h1 { @apply text-3xl font-bold mt-8 mb-4; }
+.prose-cms h2 { @apply text-2xl font-bold mt-6 mb-3; }
+.prose-cms h3 { @apply text-xl font-semibold mt-4 mb-2; }
+.prose-cms p { @apply my-3 leading-relaxed; }
+.prose-cms ul { @apply list-disc ml-6 my-3; }
+.prose-cms a { @apply text-brand-primary underline; }
+.prose-cms img { @apply rounded-lg my-4 max-w-full; }

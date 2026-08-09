@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "supramono": {
+      "command": "python",
+      "args": ["-m", "agent.mcp"],
+      "env": {
+        "API_URL": "https://supramono.com",
+        "API_TOKEN": "<your product-scoped API token>"
+      }
+    }
+  }
+}
