@@ -16,9 +16,12 @@ export async function generateStaticParams() {
     if (!lp.is_home) slugs.add(lp.slug);
   }
   for (const page of manifest.pages) slugs.add(page.slug);
-  return [...slugs]
+  const params = [...slugs]
     .filter((slug) => !RESERVED.has(slug))
     .map((slug) => ({ slug }));
+  // Static export requires at least one param; the demo About page fills
+  // in until the product publishes real CMS pages.
+  return params.length ? params : [{ slug: "about" }];
 }
 
 export async function generateMetadata(
