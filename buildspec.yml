@@ -2,7 +2,7 @@
 # buildspec (clone -> npm ci -> npm run build -> s3 sync); this file exists so
 # you can reproduce the same build locally or in your own CI:
 #
-#   npm ci && npm run build     # output lands in dist/
+#   npm ci && npm run build     # output lands in out/
 #
 # Env vars provided by the Supramono pipeline at build time:
 #   SUPRAMONO_API_URL      - platform base URL
@@ -18,6 +18,6 @@ phases:
       - npm ci
       - npm run build
 artifacts:
-  base-directory: dist
+  base-directory: out
   files:
     - "**/*"

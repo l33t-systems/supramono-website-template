@@ -1,8 +1,11 @@
+"use client";
+
 import { FormEvent, useState } from "react";
-import { supramono } from "../lib/supramono";
+import { supramono } from "@/src/lib/supramono";
 
 /** Contact/lead form wired to the Supramono CRM (public leads endpoint).
-    The hidden website_url field is a honeypot — leave it in place. */
+    Runs in the browser — the only client-side Supramono call in the
+    template. The hidden website_url field is a honeypot — leave it in. */
 export default function LeadForm() {
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
 
@@ -16,7 +19,7 @@ export default function LeadForm() {
         email: String(form.get("email") || ""),
         message: String(form.get("message") || ""),
         ...(form.get("website_url")
-          ? { website_url: String(form.get("website_url")) } as object
+          ? ({ website_url: String(form.get("website_url")) } as object)
           : {}),
       });
       setState("done");

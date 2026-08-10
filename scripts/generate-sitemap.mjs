@@ -5,10 +5,10 @@
 // Supramono platform stops serving them once the site is live.
 const API_URL =
   process.env.SUPRAMONO_API_URL ||
-  process.env.VITE_SUPRAMONO_API_URL ||
+  process.env.NEXT_PUBLIC_SUPRAMONO_API_URL ||
   "https://supramono.com";
 const SITE_KEY =
-  process.env.SUPRAMONO_PUBLIC_KEY || process.env.VITE_SUPRAMONO_PUBLIC_KEY;
+  process.env.SUPRAMONO_PUBLIC_KEY || process.env.NEXT_PUBLIC_SUPRAMONO_PUBLIC_KEY;
 const SITE_ORIGIN = process.env.SITE_ORIGIN || ""; // e.g. https://acme.supramono.com
 
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -44,13 +44,13 @@ async function main() {
       .join("\n") +
     `\n</urlset>\n`;
 
-  mkdirSync("dist", { recursive: true });
-  writeFileSync("dist/sitemap.xml", xml);
+  mkdirSync("out", { recursive: true });
+  writeFileSync("out/sitemap.xml", xml);
   writeFileSync(
-    "dist/robots.txt",
+    "out/robots.txt",
     `User-agent: *\nAllow: /\nSitemap: ${origin}/sitemap.xml\n`,
   );
-  console.log(`generate-sitemap: ${urls.size} URLs -> dist/sitemap.xml`);
+  console.log(`generate-sitemap: ${urls.size} URLs -> out/sitemap.xml`);
 }
 
 main().catch((e) => {

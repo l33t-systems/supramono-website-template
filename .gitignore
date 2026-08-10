@@ -1,8 +1,8 @@
 node_modules/
-dist/
+out/
+.next/
 .env
 .env.local
 .mcp.json
 *.log
 .DS_Store
-tsconfig.tsbuildinfo
