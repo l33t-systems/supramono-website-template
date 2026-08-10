@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import DynamicPage from "@/components/DynamicPage";
 import FadeIn from "@/components/FadeIn";
 import { Button } from "@/components/ui/button";
 import { getBrand, getPage } from "@/src/lib/supramono/content";
@@ -40,10 +41,9 @@ export default async function Home() {
         </div>
       </section>
 
-      {home?.html && (
+      {home && (
         <FadeIn>
-          <section className="max-w-3xl mx-auto px-4 py-12 prose-cms"
-                   dangerouslySetInnerHTML={{ __html: home.html }} />
+          <DynamicPage page={home} />
         </FadeIn>
       )}
     </div>

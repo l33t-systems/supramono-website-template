@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import DynamicPage from "@/components/DynamicPage";
 import { supramono, BlogPostDetail, PageContent } from "@/src/lib/supramono";
 
 /** Client-side dynamic content fallback, rendered from the 404 page.
@@ -60,11 +61,7 @@ export default function DynamicFallback() {
     );
   }
   if (page) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-12">
-        <div className="prose-cms" dangerouslySetInnerHTML={{ __html: page.html }} />
-      </div>
-    );
+    return <DynamicPage page={page} />;
   }
   if (state === "loading") {
     return (

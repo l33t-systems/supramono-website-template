@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { brandCssVars, getBrand } from "@/src/lib/supramono/content";
+import { brandCssVars, getBrand, getManifest } from "@/src/lib/supramono/content";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -21,6 +21,14 @@ export default async function RootLayout({
 }) {
   const brand = await getBrand();
   const name = brand.product.name;
+  // CMS-driven menu: pages published in Supramono appear in the nav.
+  const manifest = await getManifest();
+  const cmsNav = [
+    ...manifest.landing_pages.filter((p) => !p.is_home),
+    ...manifest.pages,
+  ]
+    .filter((p) => !["blog", "contact", "home"].includes(p.slug))
+    .slice(0, 4);
 
   return (
     <html lang="en" style={brandCssVars(brand)}>
@@ -37,6 +45,11 @@ export default async function RootLayout({
             </Link>
             <nav className="flex items-center gap-6 text-sm font-medium text-gray-600">
               <Link href="/" className="hover:text-gray-900">Home</Link>
+              {cmsNav.map((p) => (
+                <Link key={p.slug} href={`/${p.slug}/`} className="hover:text-gray-900">
+                  {p.title}
+                </Link>
+              ))}
               <Link href="/blog/" className="hover:text-gray-900">Blog</Link>
               <Link href="/contact/" className="hover:text-gray-900">Contact</Link>
             </nav>

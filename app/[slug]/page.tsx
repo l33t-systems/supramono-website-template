@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import DynamicPage from "@/components/DynamicPage";
 import { getManifest, getPage } from "@/src/lib/supramono/content";
 
 // Generic CMS page by slug (published landing pages + legacy pages),
@@ -43,9 +44,5 @@ export default async function CmsPage(
   const page = await getPage(slug);
   if (!page) notFound();
 
-  return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
-      <div className="prose-cms" dangerouslySetInnerHTML={{ __html: page.html }} />
-    </div>
-  );
+  return <DynamicPage page={page} />;
 }

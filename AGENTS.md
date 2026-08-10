@@ -64,6 +64,18 @@ typed tools (`list_blog_posts`, `create_blog_post`, `update_landing_page`,
 `list_leads`, `generate_asset`, …) for the entire platform — use them to
 read real content while building UI, or to create content the site needs.
 
+## Dynamic CMS pages (section registry)
+
+CMS pages render through `components/sections/registry.tsx`: each section
+`{type, content, html}` maps to a native React component (hero,
+feature_grid, faq, cta_banner, lead_capture, logos, ...); unregistered
+types fall back to the platform's server-rendered `html`, so pages never
+break. To take over a section type natively, add a component and register
+it in `SECTIONS`. The nav menu is CMS-driven too (`app/layout.tsx` builds
+it from the site manifest). `components/DynamicPage.tsx` is the page
+loader used by `/[slug]`, the home CMS block, and the dynamic 404
+fallback.
+
 ## Conventions
 
 - Brand colors are CSS variables (`--brand-primary`, `--brand-bg`,
