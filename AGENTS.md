@@ -76,6 +76,32 @@ it from the site manifest). `components/DynamicPage.tsx` is the page
 loader used by `/[slug]`, the home CMS block, and the dynamic 404
 fallback.
 
+### Authoring a CMS page (the /features example)
+
+Pages are authored as structured sections on a Supramono `Page` row
+(`create_page`/`update_page` via MCP, or `POST /api/v1/pages/`). Example —
+this exact shape renders natively through the section registry:
+
+```json
+{
+  "product": 177, "title": "Features", "slug": "features", "page_type": "landing",
+  "sections": [
+    {"type": "hero", "title": "Everything ships itself",
+     "subtitle": "…", "cta": "Talk to us", "cta_link": "/contact/"},
+    {"type": "feature_grid", "title": "What this page proves",
+     "items": [{"title": "…", "description": "…"}]},
+    {"type": "faq", "title": "How does it work?",
+     "faqs": [{"question": "…", "answer": "…"}]},
+    {"type": "lead_capture", "title": "Want this for your product?",
+     "subtitle": "…"}
+  ]
+}
+```
+
+The page is instantly viewable at `/<slug>/` (dynamic fallback) and gets
+pre-rendered on the next build. Section `type` values map to registry
+components; unknown types fall back to platform HTML.
+
 ## Conventions
 
 - Brand colors are CSS variables (`--brand-primary`, `--brand-bg`,
