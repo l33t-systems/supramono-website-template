@@ -14,7 +14,7 @@ import type { JSX } from "react";
 import LeadForm from "@/components/LeadForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import type { PageSection } from "@/src/lib/supramono";
+import type { PageSection, SectionMedia } from "@/src/lib/supramono";
 
 type Data = Record<string, unknown>;
 
@@ -41,6 +41,42 @@ function asData(content: unknown): Data | undefined {
     : undefined;
 }
 
+/** Every image/video the section shows on the live page (`content.media`). */
+function media(data: Data | undefined): SectionMedia[] {
+  const v = data?.media;
+  return Array.isArray(v)
+    ? (v as SectionMedia[]).filter((m) => m && typeof m.url === "string" && m.url)
+    : [];
+}
+
+/** The section's background image: `background_url`, else the first
+    background-role media. Set it in Supramono with place_section_image. */
+function backgroundUrl(data: Data | undefined): string {
+  return (
+    pick(data, "background_url") ||
+    media(data).find((m) => m.role === "background" && m.kind === "image")?.url ||
+    ""
+  );
+}
+
+/** An item's picture, whatever the section calls it. */
+function itemImage(item: Data | undefined): string {
+  return pick(item, "image_url", "media_url", "photo_url", "logo_url", "url", "src");
+}
+
+/** Full-bleed background layer; render inside a `relative isolate` section. */
+function Backdrop({ url }: { url: string }) {
+  if (!url) return null;
+  return (
+    <>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={url} alt="" aria-hidden
+           className="absolute inset-0 -z-20 size-full object-cover opacity-25" />
+      <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-background/40 to-background/80" />
+    </>
+  );
+}
+
 // ---------------------------------------------------------------------------
 
 function Hero({ data }: { data?: Data }) {
@@ -50,7 +86,8 @@ function Hero({ data }: { data?: Data }) {
   const ctaText = pick(data, "cta", "cta_text", "hero_cta", "button_text");
   const ctaLink = pick(data, "cta_link", "hero_cta_link", "button_link") || "/contact/";
   return (
-    <section className="bg-brand-bg">
+    <section className="relative isolate overflow-hidden bg-brand-bg">
+      <Backdrop url={backgroundUrl(data)} />
       <div className="max-w-5xl mx-auto px-4 py-20 text-center">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight">{title}</h1>
         {subtitle && (
@@ -79,7 +116,11 @@ function FeatureGrid({ data }: { data?: Data }) {
         {features.map((f, i) => (
           <Card key={i}>
             <CardHeader>
-              {pick(f, "icon_url") && (
+              {itemImage(f) ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={itemImage(f)} alt={pick(f, "image_alt", "title")}
+                     className="mb-3 w-full rounded-md object-cover aspect-video" />
+              ) : pick(f, "icon_url") && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={pick(f, "icon_url")} alt="" className="size-10 mb-2" />
               )}
@@ -161,9 +202,86 @@ function Logos({ data }: { data?: Data }) {
       <div className="flex flex-wrap items-center justify-center gap-10 opacity-70">
         {logos.map((l, i) => (
           // eslint-disable-next-line @next/next/no-img-element
-          <img key={i} src={pick(l, "url", "image_url", "src")}
+          <img key={i} src={pick(l, "logo_url", "url", "image_url", "src")}
                alt={pick(l, "name", "alt")} className="h-8 w-auto" />
         ))}
+      </div>
+    </section>
+  );
+}
+
+/** problem / solution / steps: a title, an intro and a list of items, each
+    with an optional image. Numbered for steps. */
+function ListSection({ data, numbered = false }: { data?: Data; numbered?: boolean }) {
+  const list = items(data, "items", "problems", "solutions", "steps");
+  if (!list.length) return null;
+  const title = pick(data, "title", "heading");
+  const intro = pick(data, "body", "subtitle", "description");
+  const bg = backgroundUrl(data);
+  const inline = media(data).find((m) => m.role === "inline" && m.kind === "image"
+    && !list.some((it) => itemImage(it) === m.url));
+  return (
+    <section className="relative isolate overflow-hidden">
+      <Backdrop url={bg} />
+      <div className="max-w-5xl mx-auto px-4 py-16">
+        {title && <h2 className="text-3xl font-bold text-center">{title}</h2>}
+        {intro && <p className="mt-3 text-center text-muted-foreground max-w-2xl mx-auto">{intro}</p>}
+        {inline && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={inline.url} alt={inline.alt} className="mt-8 mx-auto max-w-2xl w-full rounded-lg shadow" />
+        )}
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {list.map((it, i) => (
+            <Card key={i}>
+              {itemImage(it) && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={itemImage(it)} alt={pick(it, "image_alt", "title")}
+                     className="w-full rounded-t-xl object-cover aspect-video" />
+              )}
+              <CardHeader>
+                <CardTitle>
+                  {numbered && <span className="mr-2 text-muted-foreground">{i + 1}.</span>}
+                  {pick(it, "title", "name", "heading")}
+                </CardTitle>
+                {pick(it, "description", "body", "text") && (
+                  <CardDescription>{pick(it, "description", "body", "text")}</CardDescription>
+                )}
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** features: columns of bullet lists, each column with an optional image. */
+function FeatureColumns({ data }: { data?: Data }) {
+  const columns = items(data, "columns");
+  if (!columns.length) return null;
+  const title = pick(data, "title", "heading");
+  return (
+    <section className="relative isolate overflow-hidden">
+      <Backdrop url={backgroundUrl(data)} />
+      <div className="max-w-5xl mx-auto px-4 py-16">
+        {title && <h2 className="text-3xl font-bold text-center mb-10">{title}</h2>}
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {columns.map((col, i) => (
+            <div key={i}>
+              {itemImage(col) && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={itemImage(col)} alt={pick(col, "image_alt", "title")}
+                     className="mb-4 w-full rounded-lg object-cover aspect-video" />
+              )}
+              {pick(col, "title") && <h3 className="font-semibold mb-3">{pick(col, "title")}</h3>}
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                {(Array.isArray(col.items) ? col.items : []).map((f, j) => (
+                  <li key={j}>{typeof f === "string" ? f : pick(f as Data, "title", "text")}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -182,6 +300,10 @@ const SECTIONS: Record<string, (props: { data?: Data }) => JSX.Element | null> =
   lead_capture: LeadCapture,
   contact_form: LeadCapture,
   logos: Logos,
+  problem: ({ data }) => ListSection({ data }),
+  solution: ({ data }) => ListSection({ data }),
+  steps: ({ data }) => ListSection({ data, numbered: true }),
+  features: FeatureColumns,
 };
 
 export function SectionRenderer({ section }: { section: PageSection }) {

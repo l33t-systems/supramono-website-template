@@ -24,8 +24,21 @@ export interface BlogCategory {
   description: string;
 }
 
+/** An image or video a section shows, as the live page renders it. Every
+ *  section's `content.media` lists them; `content.background_url` is the
+ *  section's background, when it has one. */
+export interface SectionMedia {
+  url: string;
+  kind: "image" | "video";
+  alt: string;
+  role: "background" | "inline";
+}
+
 export interface PageSection {
   type: string;
+  /** Structured copy. Besides the section's own fields it carries
+   *  `media: SectionMedia[]` and `background_url` when the section shows
+   *  images; items carry `image_url` (or `icon_url` / `logo_url`). */
   content?: unknown;
   html: string;
 }
