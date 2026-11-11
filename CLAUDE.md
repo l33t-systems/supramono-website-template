@@ -36,6 +36,21 @@ and leads all live there and are reachable through APIs described below.
 never rename it with a `NEXT_PUBLIC_` prefix. `src/lib/supramono/
 adminClient.ts` throws if imported in the browser — keep that guard.
 
+## Supramono context for agents
+
+Before doing anything content- or data-related here, load the Supramono
+agent context: **https://supramono.com/supramono.md** (same document at
+https://mcp.supramono.com/supramono.md, and as the `get_supramono_context`
+tool / `supramono://context` resource on the hosted MCP server). It defines
+the platform, its data model (products, campaigns, posts, assets, CRM,
+client collaboration), the rules (drafts only, never publish, client-safe
+copy) and how to work through the tools. Playbooks: the `help(topic)` tool.
+
+Hosted MCP (no repo needed): `https://mcp.supramono.com/mcp` — Claude
+(Settings → Connectors), ChatGPT (Connectors → Create), Claude Code
+(`claude mcp add --transport http supramono https://mcp.supramono.com/mcp`).
+The stdio `.mcp.json` route below still works for this repo's product token.
+
 ## APIs
 
 ### Public content API (used at build AND in the browser) — `/api/public/v1/`
@@ -44,7 +59,9 @@ Via `supramono` (`src/lib/supramono/publicClient.ts`):
 - `GET site/manifest/` — all published pages + posts (drives `generateStaticParams` + sitemap)
 - `GET brand/` — name, tagline, colors, theme, logo (baked into `<html>` CSS vars in `app/layout.tsx`)
 - `GET blog/posts/`, `GET blog/posts/<slug>/`, `GET blog/categories/`
-- `GET pages/<slug>/` — landing/CMS page content (structured sections + HTML)
+- `GET pages/<slug>/` — the page as the platform renders it: only the visible
+  sections, in live order, each `{type, position, visible, content, html}`,
+  plus `seo` (`meta_title`, `meta_description`, `og_image`, `canonical`)
 - `POST leads/` — contact form → CRM lead (honeypot field `website_url`)
 
 All requests carry `?site_key=<pk_…>`.
@@ -76,11 +93,38 @@ it from the site manifest). `components/DynamicPage.tsx` is the page
 loader used by `/[slug]`, the home CMS block, and the dynamic 404
 fallback.
 
-### Authoring a CMS page (the /features example)
+### Where page copy lives
 
-Pages are authored as structured sections on a Supramono `Page` row
-(`create_page`/`update_page` via MCP, or `POST /api/v1/pages/`). Example —
-this exact shape renders natively through the section registry:
+A page that exists as a `landing_page` row (the home page, and every page
+of a product on the v2 website) renders from that row, not from a `page`
+row of the same slug. Its copy is layered: `brand_data.landing_page_copy`
+(dotted keys such as `pricing.title`, `lead-capture.title`), then
+`landing_page.page_overrides`, then `component_instance.overrides` for the
+sections that have one. Read the result with
+`call_action("landing_page", "resolved", <id>, method="GET")` — the same
+payload `GET pages/<slug>/` serves — and edit the layer that sets the key.
+A `page` row that shares a landing page's slug is an old mirror: edits
+there never reach the site, and the manifest leaves it out.
+
+### Images in sections
+
+Every section's `content` carries `media` — each image/video the live page
+shows, `{url, kind, alt, role: "background" | "inline"}` — and
+`background_url` when it has a background. Items carry `image_url`
+(`icon_url` / `logo_url` in some sections). The registry's `Backdrop`,
+`itemImage()` and `backgroundUrl()` read them, so a native component shows
+the same pictures as the platform page. To change an image, use the
+Supramono MCP `place_section_image(product_id, section, slot, prompt |
+asset_id | image_url)` — `slot` is `background` / `left` / `right` /
+`center` for the section's own image, or `item` with `item_index` — then
+rebuild.
+
+### Authoring a new CMS page (the /features example)
+
+A page with no `landing_page` row is authored as structured sections on a
+Supramono `Page` row (`create_page`/`update_page` via MCP, or
+`POST /api/v1/pages/`). Example — this exact shape renders natively through
+the section registry:
 
 ```json
 {
