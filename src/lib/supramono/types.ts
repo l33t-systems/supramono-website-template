@@ -63,6 +63,12 @@ export interface Brand {
     accent_color?: string;
     accent_bg?: string;
     accent_text?: string;
+    /** Palette colours by role (primary, accent, ...). */
+    colors?: Record<string, string>;
+    /** The :root tokens the platform's section html reads (--h2-size ...). */
+    css_vars?: Record<string, string>;
+    /** The platform's theme stylesheet, to inline where fallback html renders. */
+    css?: string;
   };
   logo_url: string;
 }
@@ -77,6 +83,20 @@ export interface SiteManifest {
   posts: BlogPostSummary[];
   /** The live site's navbar (Supramono #852). Absent on older API versions. */
   nav?: SiteNav;
+  /** The live site footer (Supramono #860). */
+  footer?: SiteFooter;
+}
+
+export interface SiteFooter {
+  tagline: string;
+  copyright: string;
+  links: Array<{ label: string; href: string; group: string }>;
+  legal: Array<{ label: string; href: string }>;
+  social: Array<{ network: string; label: string; url: string }>;
+  text: string[];
+  login_url: string;
+  show_powered_by: boolean;
+  html: string;
 }
 
 export interface SiteNavItem {

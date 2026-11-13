@@ -92,3 +92,17 @@ export function brandCssVars(brand: Brand): Record<string, string> {
   if (brand.theme.accent_text) vars["--brand-text"] = brand.theme.accent_text;
   return vars;
 }
+
+/** Selector the platform's theme stylesheet is scoped to: the wrapper of
+    every section that falls back to platform html (registry.tsx). */
+export const CMS_SCOPE = "cms-section";
+
+/** `brand.theme.css` (Supramono #863) scoped to `.cms-section`, so the
+    fallback section html finds the tokens it reads (--h2-size, --hero-bg,
+    .theme-card ...) without the platform's `:root` tokens overriding this
+    site's own (--brand-primary, --section-py ...). Inline it once in the
+    layout. */
+export function scopedThemeCss(brand: Brand): string {
+  const css = brand.theme.css || "";
+  return css.replace(/:root\b/g, `.${CMS_SCOPE}`).replace(/<\/style/gi, "<\\/style");
+}

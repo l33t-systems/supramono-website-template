@@ -21,7 +21,7 @@ export interface Nav {
 }
 
 /** Slugs this static site serves at /<slug>/. */
-function siteSlugs(manifest: SiteManifest): Set<string> {
+export function siteSlugs(manifest: SiteManifest): Set<string> {
   return new Set([
     ...manifest.landing_pages.filter((p) => !p.is_home).map((p) => p.slug),
     ...manifest.pages.map((p) => p.slug),

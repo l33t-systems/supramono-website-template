@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { buildNav } from "@/src/lib/nav";
-import { brandCssVars, getBrand, getManifest } from "@/src/lib/supramono/content";
+import { buildNav, localHref, siteSlugs } from "@/src/lib/nav";
+import { brandCssVars, getBrand, getManifest, scopedThemeCss } from "@/src/lib/supramono/content";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -24,12 +24,19 @@ export default async function RootLayout({
   const name = brand.product.name;
   // CMS-driven menu: the live Supramono navbar (manifest.nav), see
   // src/lib/nav.ts. Dropdowns open on hover and on keyboard focus.
-  const nav = buildNav(await getManifest());
+  const manifest = await getManifest();
+  const nav = buildNav(manifest);
+  // The live footer (manifest.footer); its page links are local paths too.
+  const footer = manifest.footer;
+  const slugs = siteSlugs(manifest);
+  const themeCss = scopedThemeCss(brand);
   const cta = nav.buttons[nav.buttons.length - 1];
 
   return (
     <html lang="en" style={brandCssVars(brand)}>
       <body className="min-h-screen flex flex-col bg-white text-brand-text antialiased">
+        {/* The platform theme, scoped to fallback section html (.cms-section). */}
+        {themeCss && <style dangerouslySetInnerHTML={{ __html: themeCss }} />}
         <header className="border-b border-gray-100">
           <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
@@ -76,9 +83,26 @@ export default async function RootLayout({
         </header>
         <main className="flex-1">{children}</main>
         <footer className="border-t border-gray-100 mt-16">
-          <div className="max-w-5xl mx-auto px-4 py-8 text-sm text-gray-500 flex flex-wrap justify-between gap-2">
-            <span>© {new Date().getFullYear()} {name}</span>
-            <span>{brand.product.tagline}</span>
+          <div className="max-w-5xl mx-auto px-4 py-8 text-sm text-gray-500 space-y-4">
+            {!!footer?.links.length && (
+              <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-2">
+                {footer.links.map((l) => (
+                  <Link key={l.href} href={localHref(l.href, slugs)} className="hover:text-gray-900">{l.label}</Link>
+                ))}
+              </nav>
+            )}
+            <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+              <span>{footer?.copyright || `© ${new Date().getFullYear()} ${name}`}</span>
+              <span>{footer?.tagline || brand.product.tagline}</span>
+              {footer?.legal.map((l) => (
+                <a key={l.href} href={l.href} className="hover:text-gray-900">{l.label}</a>
+              ))}
+              {footer?.social.map((s) => (
+                <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer"
+                   className="hover:text-gray-900">{s.label}</a>
+              ))}
+              {footer?.text.map((t) => <span key={t}>{t}</span>)}
+            </div>
           </div>
         </footer>
       </body>
