@@ -119,6 +119,35 @@ export interface LeadSubmission {
   company_name?: string;
   /** "newsletter" creates a subscriber only (no CRM lead). */
   intent?: "newsletter";
+  /** Multi-step forms: the page the form is on (section content.page). */
+  page?: string;
+  /** Multi-step forms: every answer by field name (a list for multiple choice). */
+  fields?: Record<string, string | string[]>;
+}
+
+/** One option of a choice field in a multi-step form (Supramono #869). */
+export interface FormOption {
+  value: string;
+  label: string;
+  description?: string;
+  image_url?: string;
+}
+
+export interface FormField {
+  name: string;
+  label: string;
+  type: "text" | "email" | "tel" | "textarea" | "number" | "choice";
+  multiple?: boolean;
+  required?: boolean;
+  placeholder?: string;
+  options?: FormOption[];
+}
+
+/** A step of a CMS-defined form: form sections carry content.steps. */
+export interface FormStep {
+  title: string;
+  subtitle?: string;
+  fields: FormField[];
 }
 
 export interface Paginated<T> {
