@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { buildNav } from "@/src/lib/nav";
 import { brandCssVars, getBrand, getManifest } from "@/src/lib/supramono/content";
 import "./globals.css";
 
@@ -21,14 +22,10 @@ export default async function RootLayout({
 }) {
   const brand = await getBrand();
   const name = brand.product.name;
-  // CMS-driven menu: pages published in Supramono appear in the nav.
-  const manifest = await getManifest();
-  const cmsNav = [
-    ...manifest.landing_pages.filter((p) => !p.is_home),
-    ...manifest.pages,
-  ]
-    .filter((p) => !["blog", "contact", "home"].includes(p.slug))
-    .slice(0, 4);
+  // CMS-driven menu: the live Supramono navbar (manifest.nav), see
+  // src/lib/nav.ts. Dropdowns open on hover and on keyboard focus.
+  const nav = buildNav(await getManifest());
+  const cta = nav.buttons[nav.buttons.length - 1];
 
   return (
     <html lang="en" style={brandCssVars(brand)}>
@@ -43,15 +40,37 @@ export default async function RootLayout({
                 <span className="text-lg font-bold">{name}</span>
               )}
             </Link>
-            <nav className="flex items-center gap-6 text-sm font-medium text-gray-600">
-              <Link href="/" className="hover:text-gray-900">Home</Link>
-              {cmsNav.map((p) => (
-                <Link key={p.slug} href={`/${p.slug}/`} className="hover:text-gray-900">
-                  {p.title}
-                </Link>
+            <nav className="flex flex-wrap items-center gap-6 text-sm font-medium text-gray-600">
+              {nav.items.map((item) =>
+                item.children.length ? (
+                  <div key={item.label} className="group relative">
+                    {item.href ? (
+                      <Link href={item.href} className="hover:text-gray-900">{item.label}</Link>
+                    ) : (
+                      <button type="button" className="hover:text-gray-900">{item.label}</button>
+                    )}
+                    <ul className="invisible absolute left-0 top-full z-20 min-w-56 rounded-md border border-gray-100 bg-white p-2 opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                      {item.children.map((c) => (
+                        <li key={c.href}>
+                          <Link href={c.href} className="block rounded px-3 py-2 hover:bg-gray-50 hover:text-gray-900">
+                            {c.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <Link key={item.href} href={item.href} className="hover:text-gray-900">{item.label}</Link>
+                ),
+              )}
+              {nav.buttons.slice(0, -1).map((b) => (
+                <Link key={b.href} href={b.href} className="hover:text-gray-900">{b.label}</Link>
               ))}
-              <Link href="/blog/" className="hover:text-gray-900">Blog</Link>
-              <Link href="/contact/" className="hover:text-gray-900">Contact</Link>
+              {cta && (
+                <Link href={cta.href} className="rounded-md bg-brand-primary px-3 py-1.5 text-white hover:opacity-90">
+                  {cta.label}
+                </Link>
+              )}
             </nav>
           </div>
         </header>

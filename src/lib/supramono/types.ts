@@ -75,6 +75,20 @@ export interface SiteManifest {
   }>;
   pages: Array<{ kind: "page"; id: number; slug: string; title: string; page_type: string }>;
   posts: BlogPostSummary[];
+  /** The live site's navbar (Supramono #852). Absent on older API versions. */
+  nav?: SiteNav;
+}
+
+export interface SiteNavItem {
+  label: string;
+  /** null for a group that is only a dropdown. */
+  href: string | null;
+  children?: Array<{ label: string; href: string }>;
+}
+
+export interface SiteNav {
+  items: SiteNavItem[];
+  buttons: Array<{ kind: string; label: string; href: string }>;
 }
 
 export interface LeadSubmission {

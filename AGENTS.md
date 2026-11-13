@@ -88,8 +88,10 @@ CMS pages render through `components/sections/registry.tsx`: each section
 feature_grid, faq, cta_banner, lead_capture, logos, ...); unregistered
 types fall back to the platform's server-rendered `html`, so pages never
 break. To take over a section type natively, add a component and register
-it in `SECTIONS`. The nav menu is CMS-driven too (`app/layout.tsx` builds
-it from the site manifest). `components/DynamicPage.tsx` is the page
+it in `SECTIONS`. The nav menu is CMS-driven too: `src/lib/nav.ts` builds
+it from `manifest.nav`, the live Supramono navbar (labels, order, dropdown
+groups, Log in / Sign up), mapping nested live paths onto this site's
+`/<slug>/` routes. Edit the menu in Supramono, not in code. `components/DynamicPage.tsx` is the page
 loader used by `/[slug]`, the home CMS block, and the dynamic 404
 fallback.
 
