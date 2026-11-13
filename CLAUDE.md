@@ -71,7 +71,11 @@ Via `supramono` (`src/lib/supramono/publicClient.ts`):
 - `POST leads/` — contact form → CRM lead (honeypot field `website_url`). Takes `name`,
   `email`, `company_name`, `phone` and `message` (or the live form's `idea_description`).
   Form sections carry `content.fields` / `submit_label` / `secondary_cta` exactly as the
-  live form renders them; build the form from those.
+  live form renders them; build the form from those. A multi-step form also carries
+  `content.steps` (`[{title, subtitle, fields[{name, label, type, multiple, required,
+  placeholder, options[{value, label, description, image_url}]}]}]`) and `content.page`;
+  post `page` plus each answer (a list for `multiple`) as top-level keys or under `fields`.
+  A 400 with `missing` names required answers that were left out.
 
 All requests carry `?site_key=<pk_…>`.
 
@@ -100,7 +104,7 @@ break. Fallback `html` is wrapped in `.cms-section`, and `app/layout.tsx`
 inlines `brand.theme.css` scoped to it (`scopedThemeCss`), so it is styled as
 on the live page without the platform's `:root` tokens touching this site.
 Form sections build `LeadForm` from `content.fields` / `submit_label` /
-`secondary_cta`; the footer renders `manifest.footer`. To take over a section
+`secondary_cta`, or `StepLeadForm` when they carry `content.steps`; the footer renders `manifest.footer`. To take over a section
 type natively, add a component and register it in `SECTIONS`. The nav menu is CMS-driven too: `src/lib/nav.ts` builds
 it from `manifest.nav`, the live Supramono navbar (labels, order, dropdown
 groups, Log in / Sign up), mapping nested live paths onto this site's

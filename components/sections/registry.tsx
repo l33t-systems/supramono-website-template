@@ -15,10 +15,11 @@
 import Link from "next/link";
 import type { JSX } from "react";
 import LeadForm, { type LeadField } from "@/components/LeadForm";
+import StepLeadForm from "@/components/StepLeadForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { CMS_SCOPE } from "@/src/lib/supramono/content";
-import type { PageSection, SectionMedia } from "@/src/lib/supramono";
+import type { FormStep, PageSection, SectionMedia } from "@/src/lib/supramono";
 
 type Data = Record<string, unknown>;
 
@@ -193,11 +194,21 @@ function LeadCapture({ data }: { data?: Data }) {
       {pick(data, "subtitle", "description") && (
         <p className="text-muted-foreground mb-8">{pick(data, "subtitle", "description")}</p>
       )}
-      <LeadForm
-        fields={items(data, "fields") as unknown as LeadField[]}
-        submitLabel={pick(data, "submit_label") || undefined}
-        secondaryCta={link(data?.secondary_cta)}
-      />
+      {items(data, "steps").length ? (
+        // A CMS-defined multi-step form (content.steps, Supramono #869).
+        <StepLeadForm
+          steps={items(data, "steps") as unknown as FormStep[]}
+          page={pick(data, "page")}
+          submitLabel={pick(data, "submit_label") || undefined}
+          secondaryCta={link(data?.secondary_cta)}
+        />
+      ) : (
+        <LeadForm
+          fields={items(data, "fields") as unknown as LeadField[]}
+          submitLabel={pick(data, "submit_label") || undefined}
+          secondaryCta={link(data?.secondary_cta)}
+        />
+      )}
     </section>
   );
 }
