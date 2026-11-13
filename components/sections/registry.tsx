@@ -7,13 +7,17 @@
  * anything unregistered falls back to the server HTML — so pages never
  * break, and you upgrade sections to native components one at a time.
  *
+ * Fallback html is wrapped in `.cms-section`, where the layout inlines the
+ * platform's theme stylesheet (brand.theme.css), so it looks as it does live.
+ *
  * To take over a section type: add a component, register it in SECTIONS.
  */
 import Link from "next/link";
 import type { JSX } from "react";
-import LeadForm from "@/components/LeadForm";
+import LeadForm, { type LeadField } from "@/components/LeadForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { CMS_SCOPE } from "@/src/lib/supramono/content";
 import type { PageSection, SectionMedia } from "@/src/lib/supramono";
 
 type Data = Record<string, unknown>;
@@ -189,9 +193,21 @@ function LeadCapture({ data }: { data?: Data }) {
       {pick(data, "subtitle", "description") && (
         <p className="text-muted-foreground mb-8">{pick(data, "subtitle", "description")}</p>
       )}
-      <LeadForm />
+      <LeadForm
+        fields={items(data, "fields") as unknown as LeadField[]}
+        submitLabel={pick(data, "submit_label") || undefined}
+        secondaryCta={link(data?.secondary_cta)}
+      />
     </section>
   );
+}
+
+/** `{label, href}` (the API's secondary_cta), or undefined. */
+function link(v: unknown): { label: string; href: string } | undefined {
+  const d = asData(v);
+  return d && pick(d, "label") && pick(d, "href")
+    ? { label: pick(d, "label"), href: pick(d, "href") }
+    : undefined;
 }
 
 function Logos({ data }: { data?: Data }) {
@@ -317,7 +333,7 @@ export function SectionRenderer({ section }: { section: PageSection }) {
   // Unregistered type or unusable data: platform-rendered HTML fallback.
   if (section.html) {
     return (
-      <section className="prose-cms max-w-5xl mx-auto px-4"
+      <section className={`prose-cms ${CMS_SCOPE} max-w-5xl mx-auto px-4`}
                dangerouslySetInnerHTML={{ __html: section.html }} />
     );
   }

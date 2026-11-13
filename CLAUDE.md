@@ -56,13 +56,22 @@ The stdio `.mcp.json` route below still works for this repo's product token.
 ### Public content API (used at build AND in the browser) — `/api/public/v1/`
 Via `supramono` (`src/lib/supramono/publicClient.ts`):
 
-- `GET site/manifest/` — all published pages + posts (drives `generateStaticParams` + sitemap)
-- `GET brand/` — name, tagline, colors, theme, logo (baked into `<html>` CSS vars in `app/layout.tsx`)
+- `GET site/manifest/` — all published pages + posts (drives `generateStaticParams` + sitemap),
+  `nav` (the live navbar, see `src/lib/nav.ts`) and `footer` (`{tagline, copyright,
+  links[{label, href, group}], legal[{label, href}], social[{network, label, url}], text[],
+  login_url, show_powered_by, html}`, the live footer)
+- `GET brand/` — name, tagline, colors, theme, logo (baked into `<html>` CSS vars in `app/layout.tsx`).
+  `theme.css` is the stylesheet the platform's section `html` is styled with (`:root` tokens
+  such as `--h2-size`, the `theme-*` classes); inline it once when you render fallback `html`.
+  `theme.css_vars` has the same tokens as a dict, `theme.colors` the palette by role.
 - `GET blog/posts/`, `GET blog/posts/<slug>/`, `GET blog/categories/`
 - `GET pages/<slug>/` — the page as the platform renders it: only the visible
   sections, in live order, each `{type, position, visible, content, html}`,
   plus `seo` (`meta_title`, `meta_description`, `og_image`, `canonical`)
-- `POST leads/` — contact form → CRM lead (honeypot field `website_url`)
+- `POST leads/` — contact form → CRM lead (honeypot field `website_url`). Takes `name`,
+  `email`, `company_name`, `phone` and `message` (or the live form's `idea_description`).
+  Form sections carry `content.fields` / `submit_label` / `secondary_cta` exactly as the
+  live form renders them; build the form from those.
 
 All requests carry `?site_key=<pk_…>`.
 
@@ -87,8 +96,12 @@ CMS pages render through `components/sections/registry.tsx`: each section
 `{type, content, html}` maps to a native React component (hero,
 feature_grid, faq, cta_banner, lead_capture, logos, ...); unregistered
 types fall back to the platform's server-rendered `html`, so pages never
-break. To take over a section type natively, add a component and register
-it in `SECTIONS`. The nav menu is CMS-driven too: `src/lib/nav.ts` builds
+break. Fallback `html` is wrapped in `.cms-section`, and `app/layout.tsx`
+inlines `brand.theme.css` scoped to it (`scopedThemeCss`), so it is styled as
+on the live page without the platform's `:root` tokens touching this site.
+Form sections build `LeadForm` from `content.fields` / `submit_label` /
+`secondary_cta`; the footer renders `manifest.footer`. To take over a section
+type natively, add a component and register it in `SECTIONS`. The nav menu is CMS-driven too: `src/lib/nav.ts` builds
 it from `manifest.nav`, the live Supramono navbar (labels, order, dropdown
 groups, Log in / Sign up), mapping nested live paths onto this site's
 `/<slug>/` routes. Edit the menu in Supramono, not in code. `components/DynamicPage.tsx` is the page
