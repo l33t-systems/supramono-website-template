@@ -71,6 +71,9 @@ export interface Brand {
     css?: string;
   };
   logo_url: string;
+  /** Set only while the product requires Cloudflare Turnstile on its forms
+      (#870); render the widget and post its token as `turnstile_token`. */
+  turnstile_site_key?: string;
 }
 
 export interface SiteManifest {
@@ -123,6 +126,8 @@ export interface LeadSubmission {
   page?: string;
   /** Multi-step forms: every answer by field name (a list for multiple choice). */
   fields?: Record<string, string | string[]>;
+  /** Cloudflare Turnstile token, when brand.turnstile_site_key is set. */
+  turnstile_token?: string;
 }
 
 /** One option of a choice field in a multi-step form (Supramono #869). */
