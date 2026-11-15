@@ -76,6 +76,10 @@ Via `supramono` (`src/lib/supramono/publicClient.ts`):
   placeholder, options[{value, label, description, image_url}]}]}]`) and `content.page`;
   post `page` plus each answer (a list for `multiple`) as top-level keys or under `fields`.
   A 400 with `missing` names required answers that were left out.
+  When `brand/` returns `turnstile_site_key`, the product requires Cloudflare Turnstile:
+  every form renders `components/Turnstile.tsx` and posts its token as `turnstile_token`
+  (or `cf-turnstile-response`). Without a valid token the submission is dropped while the
+  response still looks like success. `app/layout.tsx` passes the key to the widget.
 
 All requests carry `?site_key=<pk_…>`.
 

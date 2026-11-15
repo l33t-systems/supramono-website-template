@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useId, useState } from "react";
+import Turnstile, { turnstileToken } from "@/components/Turnstile";
 import { supramono } from "@/src/lib/supramono";
 import type { LeadSubmission } from "@/src/lib/supramono/types";
 
@@ -67,6 +68,7 @@ export default function LeadForm({
     try {
       await supramono.submitLead({
         ...toLead(list, form),
+        turnstile_token: turnstileToken(e.currentTarget),
         ...(form.get("website_url")
           ? ({ website_url: String(form.get("website_url")) } as object)
           : {}),
@@ -103,6 +105,7 @@ export default function LeadForm({
           )}
         </div>
       ))}
+      <Turnstile />
       <div className="flex flex-wrap items-center gap-4">
         <button type="submit" disabled={state === "sending"}
                 className="bg-brand-primary text-white font-medium px-4 py-2 rounded-lg text-sm disabled:opacity-50">

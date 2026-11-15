@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { buildNav, localHref, siteSlugs } from "@/src/lib/nav";
 import { brandCssVars, getBrand, getManifest, scopedThemeCss } from "@/src/lib/supramono/content";
+import { TURNSTILE_META } from "@/components/Turnstile";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -37,6 +38,8 @@ export default async function RootLayout({
       <body className="min-h-screen flex flex-col bg-white text-brand-text antialiased">
         {/* The platform theme, scoped to fallback section html (.cms-section). */}
         {themeCss && <style dangerouslySetInnerHTML={{ __html: themeCss }} />}
+        {/* Turnstile site key while the product requires it (components/Turnstile.tsx). */}
+        {brand.turnstile_site_key && <meta name={TURNSTILE_META} content={brand.turnstile_site_key} />}
         <header className="border-b border-gray-100">
           <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">

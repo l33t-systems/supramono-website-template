@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useId, useRef, useState } from "react";
+import Turnstile, { turnstileToken } from "@/components/Turnstile";
 import { supramono } from "@/src/lib/supramono";
 import { SupramonoError, type FormField, type FormStep } from "@/src/lib/supramono/types";
 
@@ -98,6 +99,7 @@ export default function StepLeadForm({
         message: text("message") || text("idea_description") || undefined,
         page,
         fields: { ...fields, ...(text("role") ? { role: text("role") } : {}) },
+        turnstile_token: turnstileToken(e.currentTarget),
         ...(honeypot ? ({ website_url: honeypot } as object) : {}),
       });
       setState("done");
@@ -135,6 +137,7 @@ export default function StepLeadForm({
                onText={(v) => set(f.name, v)} onPick={(v) => (f.multiple ? toggle(f.name, v) : set(f.name, v))} />
       ))}
 
+      {last && <Turnstile />}
       <p role="alert" className="text-sm text-red-600 empty:hidden">{error}</p>
       <div className="flex flex-wrap items-center gap-3">
         {index > 0 && (
